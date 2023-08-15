@@ -1,6 +1,8 @@
 function Loader() {
   return (
-    <div className="loader" style={{ position: "absolute", right: "0" }} />
+    <div className="absolute inset-0 right-0 flex items-center justify-center bg-slate-200/20 backdrop-blur-sm">
+      <div className="loader" />
+    </div>
   );
 }
 
