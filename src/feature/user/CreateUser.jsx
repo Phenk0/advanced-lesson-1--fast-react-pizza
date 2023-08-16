@@ -1,11 +1,19 @@
 import { useState } from "react";
 import Button from "../../ui/Button.jsx";
+import { useDispatch } from "react-redux";
+import { updateName } from "../../store/userSlice.js";
+import { useNavigate } from "react-router-dom";
 
 function CreateUser() {
   const [username, setUsername] = useState("");
-
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   function handleSubmit(e) {
     e.preventDefault();
+    if (username.length >= 3) {
+      dispatch(updateName(username));
+      navigate("/menu");
+    } else alert("User's name must be at least 3 chars!");
   }
 
   return (
