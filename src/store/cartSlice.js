@@ -13,14 +13,24 @@ const cartSlice = createSlice({
         ({ pizzaId }) => pizzaId === payload.pizzaId
       );
 
-      if (existingItem) {
-        existingItem.quantity += 1;
-        existingItem.totalPrice =
-          existingItem.quantity * existingItem.unitPrice;
-      } else state.cart.push(payload);
+      if (existingItem)
+        cartSlice.caseReducers.increaseItemQuantity(state, {
+          payload: payload.pizzaId
+        });
+      else state.cart.push(payload);
     },
     deleteItem(state, { payload }) {
       state.cart = state.cart.filter(({ pizzaId }) => pizzaId !== payload);
+    },
+    increaseItemQuantity(state, { payload }) {
+      const existingIndex = state.cart.findIndex(
+        ({ pizzaId }) => pizzaId === payload
+      );
+
+      state.cart[existingIndex].quantity += 1;
+      state.cart[existingIndex].totalPrice =
+        state.cart[existingIndex].quantity *
+        state.cart[existingIndex].unitPrice;
     },
     decreaseItemQuantity(state, { payload }) {
       const existingItem = state.cart.find(
@@ -28,7 +38,8 @@ const cartSlice = createSlice({
       );
 
       if (existingItem.quantity === 1)
-        state.cart = state.cart.filter((item) => item !== existingItem);
+        cartSlice.caseReducers.deleteItem(state, { payload });
+
       existingItem.quantity -= 1;
       existingItem.totalPrice = existingItem.quantity * existingItem.unitPrice;
     },
@@ -38,17 +49,28 @@ const cartSlice = createSlice({
   }
 });
 
-export const { addItem, deleteItem, decreaseItemQuantity, clearCart } =
-  cartSlice.actions;
+export const {
+  addItem,
+  deleteItem,
+  increaseItemQuantity,
+  decreaseItemQuantity,
+  clearCart
+} = cartSlice.actions;
 
 export default cartSlice.reducer;
 
-export const getTotalCartQuantity = createDraftSafeSelector(
-  ({ cart }) => cart.cart,
-  (cart) => cart.reduce((acc, cartItem) => acc + cartItem.quantity, 0)
+export const getCart = ({ cart }) => cart.cart;
+
+export const getTotalCartQuantity = createDraftSafeSelector(getCart, (cart) =>
+  cart.reduce((acc, cartItem) => acc + cartItem.quantity, 0)
 );
 
-export const getTotalCartPrice = createDraftSafeSelector(
-  ({ cart }) => cart.cart,
-  (cart) => cart.reduce((acc, cartItem) => acc + cartItem.totalPrice, 0)
+export const getTotalCartPrice = createDraftSafeSelector(getCart, (cart) =>
+  cart.reduce((acc, cartItem) => acc + cartItem.totalPrice, 0)
 );
+
+export const getCurrentQuantityById = (id) =>
+  createDraftSafeSelector(
+    getCart,
+    (cart) => cart.find(({ pizzaId }) => pizzaId === id)?.quantity ?? 0
+  );
